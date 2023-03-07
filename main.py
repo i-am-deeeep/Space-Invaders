@@ -13,7 +13,7 @@ screen=pygame.display.set_mode((800,600))
 background=pygame.image.load('background.png')
 
 # Background music
-mixer.music.load('background_music.wav')
+mixer.music.load('background-music.wav')
 mixer.music.play(-1)
 
 # Title and icon
@@ -99,7 +99,7 @@ while running:
                 player_mov=0
 
         if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_SPACE:
+            if event.key==pygame.K_SPACE and fired==0:
                 fired=1
                 bulletY=480-18
                 mixer.Sound('laser.wav').play()
