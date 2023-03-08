@@ -1,3 +1,9 @@
+import pygame
+import random
+import math
+from pygame import mixer
+
+
 class Enemy:
     def __init__(self,img,enemyX,enemyY,enemyX_mov,enemyY_mov):
         self.img=img
@@ -6,14 +12,22 @@ class Enemy:
         self.enemyX_mov=enemyX_mov
         self.enemyY_mov=enemyY_mov
 
+        if img==alien1:
+            pass
+        if img==alien2:
+            self.enemyY_mov=1.6
+        if img==alien3:
+            self.enemyY_mov=0.1
+            self.enemyX_mov=2
+        if img==alien4:
+            self.enemyY_mov=0.5
+            self.enemyX_mov=0.5
         if img==alien5:
-            self.enemyY_mov-=0.6
+            self.enemyY_mov=0.4
+        if img==alien6:
+            pass
 
 
-import pygame
-import random
-import math
-from pygame import mixer
 
 # Initialize the game
 pygame.init()
@@ -40,6 +54,7 @@ playerY=480
 player_mov=0
 def player(x,y):
     screen.blit(playerImg,(x,y))
+level=10
 
 # Enemy
 enemy_list=[]
@@ -132,6 +147,13 @@ while running:
 
     for i,enemy_obj in enumerate(enemy_list):
 
+
+        if enemy_obj.img==alien1:
+            if random.randint(1,100)==1:
+                temp=enemy_obj.enemyX_mov
+                enemy_obj.enemyX_mov=enemy_obj.enemyY_mov
+                enemy_obj.enemyY_mov=temp if temp>0 else temp*(-1)
+
         # Game over logic
         if isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
             isGameOver=True
@@ -166,7 +188,8 @@ while running:
 
 
     # Enemy spawn
-    if isGameOver==False and random.randint(1,100)<=1:
+    level+=0.0001
+    if isGameOver==False and random.randint(1,1000)<=level:
         r=random.randint(1,6)
         if r==1:
             img=alien1
