@@ -1,9 +1,13 @@
 class Enemy:
-    def __init__(self,enemyX,enemyY,enemyX_mov,enemyY_mov):
+    def __init__(self,img,enemyX,enemyY,enemyX_mov,enemyY_mov):
+        self.img=img
         self.enemyX=enemyX
         self.enemyY=enemyY
         self.enemyX_mov=enemyX_mov
         self.enemyY_mov=enemyY_mov
+
+        if img==alien5:
+            self.enemyY_mov-=0.6
 
 
 import pygame
@@ -39,19 +43,14 @@ def player(x,y):
 
 # Enemy
 enemy_list=[]
-# enemyX=[]
-# enemyY=[]
-# enemyX_mov=[]
-# enemyY_mov=[]
-# num_of_enemies=6
-# for i in range(num_of_enemies):
-#     enemyX.append(random.randint(0,736))
-#     enemyY.append(-44)
-#     enemyX_mov.append(0)
-#     enemyY_mov.append(0.5)
-enemyImg=pygame.image.load('enemy.png')
-def enemy(x,y):
-    screen.blit(enemyImg,(x,y))
+alien1=pygame.image.load('alien1.png')
+alien2=pygame.image.load('alien2.png')
+alien3=pygame.image.load('alien3.png')
+alien4=pygame.image.load('alien4.png')
+alien5=pygame.image.load('alien5.png')
+alien6=pygame.image.load('alien6.png')
+def enemy(img,x,y):
+    screen.blit(img,(x,y))
 
 # Bullet
 bulletImg=pygame.image.load('bullet.png')
@@ -147,7 +146,7 @@ while running:
             enemy_obj.enemyX= 0 if enemy_obj.enemyX<0 else 736
             enemy_obj.enemyX_mov*=-1
         
-        enemy(enemy_obj.enemyX,enemy_obj.enemyY)
+        enemy(enemy_obj.img,enemy_obj.enemyX,enemy_obj.enemyY)
         
         if enemy_obj.enemyY>800:
             del enemy_obj
@@ -167,10 +166,22 @@ while running:
 
 
     # Enemy spawn
-    if isGameOver==False and random.randint(1,100)<=2:
-        enemy_obj=Enemy(random.randint(0,736),-44,0,0.5)
+    if isGameOver==False and random.randint(1,100)<=1:
+        r=random.randint(1,6)
+        if r==1:
+            img=alien1
+        if r==2:
+            img=alien2
+        if r==3:
+            img=alien3
+        if r==4:
+            img=alien4
+        if r==5:
+            img=alien5
+        if r==6:
+            img=alien6
+        enemy_obj=Enemy(img,random.randint(0,736),-44,0,1)
         enemy_list.append(enemy_obj)
-
 
 
 
@@ -187,5 +198,6 @@ while running:
 
     if isGameOver:
         gameOver()
+    
     showScore()
     pygame.display.update()
