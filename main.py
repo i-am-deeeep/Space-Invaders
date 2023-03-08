@@ -1,3 +1,11 @@
+class Enemy:
+    def __init__(self,enemyX,enemyY,enemyX_mov,enemyY_mov):
+        self.enemyX=enemyX
+        self.enemyY=enemyY
+        self.enemyX_mov=enemyX_mov
+        self.enemyY_mov=enemyY_mov
+
+
 import pygame
 import random
 import math
@@ -30,16 +38,17 @@ def player(x,y):
     screen.blit(playerImg,(x,y))
 
 # Enemy
-enemyX=[]
-enemyY=[]
-enemyX_mov=[]
-enemyY_mov=[]
-num_of_enemies=6
-for i in range(num_of_enemies):
-    enemyX.append(random.randint(0,736))
-    enemyY.append(-44)
-    enemyX_mov.append(4)
-    enemyY_mov.append(10)
+enemy_list=[]
+# enemyX=[]
+# enemyY=[]
+# enemyX_mov=[]
+# enemyY_mov=[]
+# num_of_enemies=6
+# for i in range(num_of_enemies):
+#     enemyX.append(random.randint(0,736))
+#     enemyY.append(-44)
+#     enemyX_mov.append(0)
+#     enemyY_mov.append(0.5)
 enemyImg=pygame.image.load('enemy.png')
 def enemy(x,y):
     screen.blit(enemyImg,(x,y))
@@ -47,17 +56,26 @@ def enemy(x,y):
 # Bullet
 bulletImg=pygame.image.load('bullet.png')
 bulletX=0
-bulletY=480-18
-bulletY_mov=10
+bulletY=2000
+bulletY_mov=18
 fired=0
 def bullet(x,y):
     screen.blit(bulletImg,(x,y))
 
-def isCollision(enemyX,enemyY,bulletX,bulletY):
-    distance=math.sqrt(math.pow(enemyX-bulletX,2)+math.pow(enemyY-bulletY,2))
-    if distance<32:
-        return True
-    return False
+
+# Function to handle all collisions
+def isCollision(X1,Y1,X2,Y2,type):
+    distance=math.sqrt(math.pow(X1-X2,2)+math.pow(Y1-Y2,2))
+    if type=="player":
+        if distance<=45:
+            return True
+        else:
+            return False
+    elif type=="enemy":
+        if distance<=34:
+            return True
+        else:
+            return False
 
 # Score
 score_val=0
@@ -105,50 +123,58 @@ while running:
                 mixer.Sound('laser.wav').play()
     
     if player_mov!=0:
-        playerX+=player_mov*4
+        playerX+=player_mov*6
         if playerX<0:
             playerX=0
         if playerX>736:
             playerX=736
     
-    for i in range(num_of_enemies):
+
+
+    for i,enemy_obj in enumerate(enemy_list):
 
         # Game over logic
-        if enemyY[i]>=435 and abs(enemyX[i]-playerX)<5:
+        if isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
             isGameOver=True
-            for j in range(num_of_enemies):
-                enemyY[j]=800
+            for enemy_obj2 in enemy_list:
+                del enemy_obj2
+            enemy_list.clear()
+            break
 
-        enemyX[i]+=enemyX_mov[i]
-        if enemyX[i]<0:
-            enemyX[i]=0
-            enemyX_mov[i]*=-1
-            enemyY[i]+=enemyY_mov[i]
-        if enemyX[i]>736:
-            enemyX[i]=736
-            enemyX_mov[i]*=-1
-            enemyY[i]+=enemyY_mov[i]
-        # Collision
-        collision=isCollision(enemyX[i]+16,enemyY[i]+16,bulletX+8,bulletY+8)
-        if collision:
-            mixer.Sound('explosion.wav').play()
+        enemy_obj.enemyX+=enemy_obj.enemyX_mov
+        enemy_obj.enemyY+=enemy_obj.enemyY_mov
+        if enemy_obj.enemyX<0 or enemy_obj.enemyX>736:
+            enemy_obj.enemyX= 0 if enemy_obj.enemyX<0 else 736
+            enemy_obj.enemyX_mov*=-1
+        
+        enemy(enemy_obj.enemyX,enemy_obj.enemyY)
+        
+        # Collision of enemy with bullet
+        if isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
+            #mixer.Sound('explosion.wav').play()
             fired=0
             bulletY=2000
             score_val+=1
-            enemyX[i]=random.randint(0,736)
-            enemyY[i]=-44
-        enemy(enemyX[i],enemyY[i])
+            del enemy_obj
+            _=enemy_list.pop(i)
+
+
+
+    # Enemy spawn
+    if isGameOver==False and random.randint(1,100)<=2:
+        enemy_obj=Enemy(random.randint(0,736),-44,0,0.5)
+        enemy_list.append(enemy_obj)
+
+
 
 
     if fired==0:
-        bulletX=playerX+16
-
-
+        bulletX=playerX+24
 
     player(playerX,playerY)
     if fired==1:
         bullet(bulletX,bulletY)
-        bulletY-=10
+        bulletY-=bulletY_mov
         if bulletY<-32:
             fired=0
             bulletY=2000
