@@ -23,7 +23,7 @@ class Enemy:
             self.enemyY_mov=1
             self.enemyX_mov=1
         if img==alien5:
-            self.enemyY_mov=0.1
+            self.enemyY_mov=7
         if img==alien6:
             pass
 
@@ -81,6 +81,7 @@ def bullet(x,y):
 def isCollision(X1,Y1,X2,Y2,type):
     distance=math.sqrt(math.pow(X1-X2,2)+math.pow(Y1-Y2,2))
     if type=="player":
+        return False
         if distance<=45:
             return True
         else:
@@ -137,7 +138,7 @@ while running:
                 mixer.Sound('laser.wav').play()
     
     if player_mov!=0:
-        playerX+=player_mov*6
+        playerX+=player_mov*5
         if playerX<0:
             playerX=0
         if playerX>736:
@@ -156,7 +157,8 @@ while running:
         
         # alien5 feature
         if enemy_obj.img==alien5:
-            enemy_obj.enemyY_mov+=0.1
+            if enemy_obj.enemyY>400:
+                enemy_obj.enemyY_mov=0.1
 
         # Game over logic
         if isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
