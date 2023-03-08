@@ -17,7 +17,7 @@ class Enemy:
         if img==alien2:
             self.enemyY_mov=5
         if img==alien3:
-            self.enemyY_mov=0.5
+            self.enemyY_mov=0.7
             self.enemyX_mov=4
         if img==alien4:
             self.enemyY_mov=1
@@ -54,7 +54,7 @@ playerY=480
 player_mov=0
 def player(x,y):
     screen.blit(playerImg,(x,y))
-level=8
+level=starting_level=8
 
 # Enemy
 enemy_list=[]
@@ -177,12 +177,14 @@ while running:
         # Game over logic
         if enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
             isGameOver=True
+            #mixer.Sound('explosion.wav').play()
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
             break
         if enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy"):
             isGameOver=True
+            #mixer.Sound('explosion.wav').play()
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
@@ -217,9 +219,10 @@ while running:
 
     # Enemy spawn
     level+=0.0001
-    if isGameOver==False and random.randint(1,1000)<=level:
+    if len(enemy_list)<7 and isGameOver==False and random.randint(1,1000)<=level:
         r=random.randint(1,6)
-        if r==1:
+        img=9
+        if r==1 and level>starting_level+1:
             img=alien1
         if r==2:
             img=alien2
@@ -227,12 +230,13 @@ while running:
             img=alien3
         if r==4:
             img=alien4
-        if r==5:
+        if r==5 and level>starting_level+0.6:
             img=alien5
-        if r==6:
+        if r==6 and level>starting_level+1.4:
             img=alien6
-        enemy_obj=Enemy(img,random.randint(0,736),-44,0,1)
-        enemy_list.append(enemy_obj)
+        if img!=9:
+            enemy_obj=Enemy(img,random.randint(0,736),-44,0,1)
+            enemy_list.append(enemy_obj)
 
 
 
