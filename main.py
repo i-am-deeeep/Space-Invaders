@@ -76,12 +76,19 @@ fired=0
 def bullet(x,y):
     screen.blit(bulletImg,(x,y))
 
+# Enemy bullet
+enemyBulletImg=pygame.image.load('enemy_bullet.png')
+enemyBulletX=0
+enemyBulletY=2000
+enemyBulletY_mov=18
+enemyBulletX_mov=18
+
 
 # Function to handle all collisions
 def isCollision(X1,Y1,X2,Y2,type):
     distance=math.sqrt(math.pow(X1-X2,2)+math.pow(Y1-Y2,2))
     if type=="player":
-        return False
+        #return False
         if distance<=45:
             return True
         else:
@@ -159,15 +166,30 @@ while running:
         if enemy_obj.img==alien5:
             if enemy_obj.enemyY>400:
                 enemy_obj.enemyY_mov=0.1
+        
+       # alien6 feature
+        if enemy_obj.img==alien6:
+            if enemy_obj.enemyY<200 and random.randint(1,100)==1:
+                y=2
+                x=y*(enemy_obj.enemyX-playerX)/(enemy_obj.enemyY-playerY)
+                enemy_list.append(Enemy(enemyBulletImg,enemy_obj.enemyX+24,enemy_obj.enemyY+48,x,y)) 
 
         # Game over logic
-        if isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
+        if enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
+            isGameOver=True
+            for enemy_obj2 in enemy_list:
+                del enemy_obj2
+            enemy_list.clear()
+            break
+        if enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy"):
             isGameOver=True
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
             break
 
+
+        
         enemy_obj.enemyX+=enemy_obj.enemyX_mov
         enemy_obj.enemyY+=enemy_obj.enemyY_mov
         if enemy_obj.enemyX<0 or enemy_obj.enemyX>736:
@@ -182,7 +204,7 @@ while running:
             continue
 
         # Collision of enemy with bullet
-        if isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
+        if enemy_obj.img!=enemyBulletImg and isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
             #mixer.Sound('explosion.wav').play()
             fired=0
             bulletY=2000
@@ -195,8 +217,6 @@ while running:
 
     # Enemy spawn
     level+=0.0001
-    # if level>11:
-    #     print("11 hua")
     if isGameOver==False and random.randint(1,1000)<=level:
         r=random.randint(1,6)
         if r==1:
