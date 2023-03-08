@@ -149,6 +149,11 @@ while running:
         
         enemy(enemy_obj.enemyX,enemy_obj.enemyY)
         
+        if enemy_obj.enemyY>800:
+            del enemy_obj
+            _=enemy_list.pop(i)
+            continue
+
         # Collision of enemy with bullet
         if isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
             #mixer.Sound('explosion.wav').play()
@@ -157,6 +162,7 @@ while running:
             score_val+=1
             del enemy_obj
             _=enemy_list.pop(i)
+            continue
 
 
 
