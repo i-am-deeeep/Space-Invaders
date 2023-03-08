@@ -13,17 +13,17 @@ class Enemy:
         self.enemyY_mov=enemyY_mov
 
         if img==alien1:
-            pass
+            self.enemyY_mov=3
         if img==alien2:
-            self.enemyY_mov=1.6
+            self.enemyY_mov=5
         if img==alien3:
-            self.enemyY_mov=0.1
-            self.enemyX_mov=2
-        if img==alien4:
             self.enemyY_mov=0.5
-            self.enemyX_mov=0.5
+            self.enemyX_mov=4
+        if img==alien4:
+            self.enemyY_mov=1
+            self.enemyX_mov=1
         if img==alien5:
-            self.enemyY_mov=0.4
+            self.enemyY_mov=0.1
         if img==alien6:
             pass
 
@@ -54,7 +54,7 @@ playerY=480
 player_mov=0
 def player(x,y):
     screen.blit(playerImg,(x,y))
-level=10
+level=8
 
 # Enemy
 enemy_list=[]
@@ -147,12 +147,16 @@ while running:
 
     for i,enemy_obj in enumerate(enemy_list):
 
-
+        # alien1 feature
         if enemy_obj.img==alien1:
             if random.randint(1,100)==1:
                 temp=enemy_obj.enemyX_mov
                 enemy_obj.enemyX_mov=enemy_obj.enemyY_mov
                 enemy_obj.enemyY_mov=temp if temp>0 else temp*(-1)
+        
+        # alien5 feature
+        if enemy_obj.img==alien5:
+            enemy_obj.enemyY_mov+=0.1
 
         # Game over logic
         if isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
@@ -189,6 +193,8 @@ while running:
 
     # Enemy spawn
     level+=0.0001
+    # if level>11:
+    #     print("11 hua")
     if isGameOver==False and random.randint(1,1000)<=level:
         r=random.randint(1,6)
         if r==1:
@@ -221,6 +227,7 @@ while running:
 
     if isGameOver:
         gameOver()
+    else:
+        showScore()
     
-    showScore()
     pygame.display.update()
