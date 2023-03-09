@@ -38,14 +38,16 @@ screen=pygame.display.set_mode((800,600))
 # Background
 background=pygame.image.load('background.png')
 
-# Background music
-mixer.music.load('background-music.wav')
-mixer.music.play(-1)
-
 # Title and icon
 pygame.display.set_caption("Space Invaders")
 icon=pygame.image.load('icon.png')
 pygame.display.set_icon(icon)
+
+
+# Background music
+mixer.music.load('background-music.wav')
+mixer.music.play(-1)
+
 
 # Player
 playerImg=pygame.image.load('spaceship.png')
@@ -115,6 +117,34 @@ def gameOver():
     screen.blit(text1,(200,250))
     screen.blit(text2,(200,320))
 
+# Restart function:
+def restartGame():
+    mixer.music.load('background-music.wav')
+    mixer.music.play(-1)
+
+    global playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
+
+    playerImg=pygame.image.load('spaceship.png')
+    playerX=370
+    playerY=480
+    player_mov=0
+    level=starting_level=8
+
+    bulletX=0
+    bulletY=2000
+    bulletY_mov=18
+    fired=0
+
+    enemyBulletX=0
+    enemyBulletY=2000
+    enemyBulletY_mov=18
+    enemyBulletX_mov=18
+
+    score_val=0
+    isGameOver=False
+
+
+
 # Game loop
 running=True
 while running:
@@ -143,6 +173,9 @@ while running:
                 fired=1
                 bulletY=480-18
                 mixer.Sound('laser.wav').play()
+            
+            if event.key==pygame.K_r and isGameOver:
+                restartGame()
     
     if isGameOver==False and player_mov!=0:
         playerX+=player_mov*5
@@ -167,7 +200,7 @@ while running:
             if enemy_obj.enemyY>400:
                 enemy_obj.enemyY_mov=0.1
         
-       # alien6 feature
+        # alien6 feature
         if enemy_obj.img==alien6:
             if enemy_obj.enemyY<200 and random.randint(1,100)==1:
                 y=2
