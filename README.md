@@ -56,4 +56,4 @@ A pygame project
 **Feature:** It shoots purple coloured bullets at the spaceship which cannot be destroyed.
 
 
-**I HOPE YOU ENJOY THE GAME**
+**❤️I HOPE YOU ENJOY THE GAME❤️**
