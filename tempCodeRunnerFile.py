@@ -1,13 +1,7 @@
-r=random.randint(1,6)
-    if r==1:
-        img=alien1
-    if r==2:
-        img=alien2
-    if r==3:
-        img=alien3
-    if r==4:
-        img=alien4
-    if r==5:
-        img=alien5
-    if r==6:
-        img=alien6
+rect_pos = 0
+# timer = 0
+# velocity = 300
+# prev_time = time.time()
+# dt = 0
+# record = 0
+# passed, start = False, False
