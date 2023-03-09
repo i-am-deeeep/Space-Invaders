@@ -52,8 +52,8 @@ playerImg=pygame.image.load('spaceship.png')
 playerX=370
 playerY=480
 player_mov=0
-def player(x,y):
-    screen.blit(playerImg,(x,y))
+def player(im,x,y):
+    screen.blit(im,(x,y))
 level=starting_level=8
 
 # Enemy
@@ -139,12 +139,12 @@ while running:
                 player_mov=0
 
         if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_SPACE and fired==0:
+            if event.key==pygame.K_SPACE and fired==0 and isGameOver==False:
                 fired=1
                 bulletY=480-18
                 mixer.Sound('laser.wav').play()
     
-    if player_mov!=0:
+    if isGameOver==False and player_mov!=0:
         playerX+=player_mov*5
         if playerX<0:
             playerX=0
@@ -175,22 +175,18 @@ while running:
                 enemy_list.append(Enemy(enemyBulletImg,enemy_obj.enemyX+24,enemy_obj.enemyY+48,x,y)) 
 
         # Game over logic
-        if enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player"):
+        if (enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player")) or (enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy")):
             isGameOver=True
-            #mixer.Sound('explosion.wav').play()
+            mixer.music.stop()
+            mixer.Sound('crash.wav').play()
+            pygame.time.wait(1500)
+            mixer.Sound('game-over.wav').play()
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
+            playerImg=pygame.image.load('spaceship_dead.png')
             break
-        if enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy"):
-            isGameOver=True
-            #mixer.Sound('explosion.wav').play()
-            for enemy_obj2 in enemy_list:
-                del enemy_obj2
-            enemy_list.clear()
-            break
-
-
+        
         
         enemy_obj.enemyX+=enemy_obj.enemyX_mov
         enemy_obj.enemyY+=enemy_obj.enemyY_mov
@@ -214,7 +210,6 @@ while running:
             del enemy_obj
             _=enemy_list.pop(i)
             continue
-
 
 
     # Enemy spawn
@@ -243,7 +238,7 @@ while running:
     if fired==0:
         bulletX=playerX+24
 
-    player(playerX,playerY)
+    player(playerImg,playerX,playerY)
     if fired==1:
         bullet(bulletX,bulletY)
         bulletY-=bulletY_mov
