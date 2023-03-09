@@ -18,10 +18,10 @@ class Enemy:
             self.enemyY_mov=5.4
         if img==alien3:
             self.enemyY_mov=0.9
-            self.enemyX_mov=4.3
+            self.enemyX_mov=4.3 if random.randint(1,2)==1 else -4.3
         if img==alien4:
             self.enemyY_mov=1.2
-            self.enemyX_mov=1.2
+            self.enemyX_mov=1.2 if random.randint(1,2)==1 else -1.2
         if img==alien5:
             self.enemyY_mov=7.5
         if img==alien6:
@@ -102,11 +102,15 @@ def isCollision(X1,Y1,X2,Y2,type):
             return False
 
 # Score
-score_val=0
+score_val,high_score_val=0,0
 score_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def showScore():
     score=score_font.render("Score : "+str(score_val),True,(255,255,255))
+    global high_score_val
+    high_score_val=score_val if score_val>high_score_val else high_score_val
+    high_score=score_font.render("High Score : "+str(high_score_val),True,(255,255,255))
     screen.blit(score,(10,10))
+    screen.blit(high_score,(10,50))
 
 # Game Over
 isGameOver=False
@@ -201,15 +205,15 @@ while running:
 
         # alien1 feature
         if enemy_obj.img==alien1:
-            if random.randint(1,100)==1:
+            if random.randint(1,100)<=2:
                 temp=enemy_obj.enemyX_mov
-                enemy_obj.enemyX_mov=enemy_obj.enemyY_mov
+                enemy_obj.enemyX_mov=enemy_obj.enemyY_mov  if random.randint(1,2)==1 else -1*enemy_obj.enemyY_mov
                 enemy_obj.enemyY_mov=temp if temp>0 else temp*(-1)
         
         # alien5 feature
         if enemy_obj.img==alien5:
             if enemy_obj.enemyY>400:
-                enemy_obj.enemyY_mov=0.1
+                enemy_obj.enemyY_mov=0.3
         
         # alien6 feature
         if enemy_obj.img==alien6:
@@ -247,7 +251,6 @@ while running:
 
         # Collision of enemy with bullet
         if enemy_obj.img!=enemyBulletImg and isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
-            #mixer.Sound('explosion.wav').play()
             fired=0
             bulletY=2000
             score_val+=1
@@ -273,14 +276,13 @@ while running:
             img=alien5
         if r==6 and level>starting_level+1:
             img=alien6
+            mixer.Sound('explosion.wav').play()
         if img!=9:
             enemy_obj=Enemy(img,random.randint(0,736),-64,0,1)
             enemy_list.append(enemy_obj)
 
 
 
-    if fired==0:
-        bulletX=playerX+24
 
     player(playerImg,playerX,playerY)
     if fired==1:
@@ -289,6 +291,8 @@ while running:
         if bulletY<-32:
             fired=0
             bulletY=2000
+    if fired==0:
+        bulletX=playerX+24
 
     if isGameOver:
         gameOver()
