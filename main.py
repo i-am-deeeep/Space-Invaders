@@ -103,19 +103,23 @@ def isCollision(X1,Y1,X2,Y2,type):
 
 # Score
 score_val=0
-score_font=pygame.font.Font('freesansbold.ttf',32)
+score_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def showScore():
     score=score_font.render("Score : "+str(score_val),True,(255,255,255))
     screen.blit(score,(10,10))
 
 # Game Over
 isGameOver=False
-over_font=pygame.font.Font('freesansbold.ttf',64)
+over_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
+#over_font.set_bold(True)
+restart_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def gameOver():
-    text1=over_font.render("GAME OVER :/",True,(255,255,255))
-    text2=over_font.render("Your score: "+str(score_val),True,(255,255,255))
-    screen.blit(text1,(200,250))
-    screen.blit(text2,(200,320))
+    text1=over_font.render("GAME OVER",True,(255,0,0))
+    text2=over_font.render("Your score: "+str(score_val),True,(20,253,199))
+    text3=restart_font.render("Press R to restart the game",True,(20,253,199))
+    screen.blit(text1,(210,170))
+    screen.blit(text2,(210,275))
+    screen.blit(text3,(210,390))
 
 # Restart function:
 def restartGame():
