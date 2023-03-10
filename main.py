@@ -13,19 +13,19 @@ class Enemy:
         self.enemyY_mov=enemyY_mov
 
         if img==alien1:
-            self.enemyY_mov=3.5
+            self.enemyY_mov=3.7
         if img==alien2:
-            self.enemyY_mov=5.4
+            self.enemyY_mov=6
         if img==alien3:
-            self.enemyY_mov=0.9
-            self.enemyX_mov=4.3 if random.randint(1,2)==1 else -4.3
+            self.enemyY_mov=1
+            self.enemyX_mov=4.6 if random.randint(1,2)==1 else -4.6
         if img==alien4:
-            self.enemyY_mov=1.2
-            self.enemyX_mov=1.2 if random.randint(1,2)==1 else -1.2
+            self.enemyY_mov=1.3
+            self.enemyX_mov=1.3 if random.randint(1,2)==1 else -1.3
         if img==alien5:
-            self.enemyY_mov=7.5
+            self.enemyY_mov=8
         if img==alien6:
-            self.enemyY_mov=1.1
+            self.enemyY_mov=1.3
 
 
 
@@ -57,6 +57,8 @@ player_mov=0
 def player(im,x,y):
     screen.blit(im,(x,y))
 level=starting_level=9
+ticks=0
+noEnemy=True
 
 # Enemy
 enemy_list=[]
@@ -73,7 +75,7 @@ def enemy(img,x,y):
 bulletImg=pygame.image.load('bullet.png')
 bulletX=0
 bulletY=2000
-bulletY_mov=28
+bulletY_mov=30
 fired=0
 def bullet(x,y):
     screen.blit(bulletImg,(x,y))
@@ -193,7 +195,7 @@ while running:
 
 
     if isGameOver==False and player_mov!=0:
-        playerX+=player_mov*6
+        playerX+=player_mov*8
         if playerX<0:
             playerX=0
         if playerX>736:
@@ -213,12 +215,12 @@ while running:
         # alien5 feature
         if enemy_obj.img==alien5:
             if enemy_obj.enemyY>400:
-                enemy_obj.enemyY_mov=0.3
+                enemy_obj.enemyY_mov=0.4
         
         # alien6 feature
         if enemy_obj.img==alien6:
-            if enemy_obj.enemyY<200 and random.randint(1,100)==1:
-                y=2.4
+            if enemy_obj.enemyY<250 and random.randint(1,1000)<=15:
+                y=3
                 x=y*(enemy_obj.enemyX-playerX)/(enemy_obj.enemyY-playerY)
                 enemy_list.append(Enemy(enemyBulletImg,enemy_obj.enemyX+24,enemy_obj.enemyY+48,x,y)) 
 
@@ -261,7 +263,11 @@ while running:
 
     # Enemy spawn
     level+=0.0001
-    if (len(enemy_list)<8 and isGameOver==False and random.randint(1,1000)<=level):
+    if len(enemy_list)==1:
+        noEnemy=True
+    if noEnemy:
+        ticks+=1
+    if (isGameOver==False and ticks>=120) or (len(enemy_list)<8 and isGameOver==False and random.randint(1,1000)<=level):
         r=random.randint(1,6)
         img=9
         if r==1 and level>starting_level+0.6:
@@ -278,6 +284,8 @@ while running:
             img=alien6
             mixer.Sound('explosion.wav').play()
         if img!=9:
+            ticks=0
+            noEnemy=False
             enemy_obj=Enemy(img,random.randint(0,736),-64,0,1)
             enemy_list.append(enemy_obj)
 
