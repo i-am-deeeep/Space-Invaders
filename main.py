@@ -1,4 +1,4 @@
-import pygame,time
+import pygame
 import random
 import math
 from pygame import mixer
@@ -104,12 +104,20 @@ def isCollision(X1,Y1,X2,Y2,type):
             return False
 
 # Score
-score_val,high_score_val=0,0
+score_val=0
+hisc1=open("exee.txt","r")
+highscore=hisc1.read()
+hisc1.close()
+high_score_val=int(highscore)
 score_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def showScore():
     score=score_font.render("Score : "+str(score_val),True,(255,255,255))
     global high_score_val
-    high_score_val=score_val if score_val>high_score_val else high_score_val
+    if score_val>high_score_val:
+        hisc2=open("exee.txt","w")
+        high_score_val=score_val 
+        hisc2.write(str(score_val))
+        hisc2.close()
     high_score=score_font.render("High Score : "+str(high_score_val),True,(255,255,255))
     screen.blit(score,(10,10))
     screen.blit(high_score,(10,50))
@@ -308,3 +316,4 @@ while running:
         showScore()
     
     pygame.display.update()
+
