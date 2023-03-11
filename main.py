@@ -109,6 +109,7 @@ hisc1=open("exee.txt","r")
 highscore=hisc1.read()
 hisc1.close()
 high_score_val=int(highscore)
+highscore_before_start=high_score_val
 score_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def showScore():
     score=score_font.render("Score : "+str(score_val),True,(255,255,255))
@@ -122,24 +123,75 @@ def showScore():
     screen.blit(score,(10,10))
     screen.blit(high_score,(10,50))
 
-# Game Over
+# Game Over function
 isGameOver=False
 over_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
 restart_font=pygame.font.Font('IndieFlower-Regular.ttf',32)
 def gameOver():
-    text1=over_font.render("GAME OVER",True,(255,0,0))
-    text2=over_font.render("Your score: "+str(score_val),True,(20,253,199))
-    text3=restart_font.render("Press R to restart the game",True,(20,253,199))
-    screen.blit(text1,(210,170))
-    screen.blit(text2,(210,275))
-    screen.blit(text3,(210,390))
+    d=[[20,False],[253,False],[199,False]]
+    frame=0
+    mus=0
+    pause=True
+    while pause:
+        frame+=1
+        if frame>100000000:
+            frame=0
+        screen.blit(background,(0,0))
+        t=tuple(i[0] for i in d)
+        if frame>120 and highscore_before_start<score_val:
+            if mus==0:
+                d[0][0]=255
+                d[1][0]=255
+                d[2][0]=0
+                mixer.Sound('highscore.wav').play()
+            mus+=1
+            highscore_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
+            for ind,[i,r] in enumerate(d):
+                if r==False:
+                    if i<255:
+                        d[ind][0]+=10
+                    else:
+                        d[ind][0]-=10
+                        d[ind][1]=True
+                    if d[ind][0]>255:
+                        d[ind][0]=255
+                if r==True:
+                    if i>0:
+                        d[ind][0]-=10
+                    else:
+                        d[ind][0]+=10
+                        d[ind][1]=False
+                    if d[ind][0]<0:
+                        d[ind][0]=0
+            text222=highscore_font.render("NEW HIGHSCORE!!",True,t)
+            screen.blit(text222,(130,270))
+            
+        text1=over_font.render("GAME OVER",True,(255,0,0))
+        text2=over_font.render("Your score:",True,(20,253,199))
+        text22=over_font.render(str(score_val),True,t)
+        text3=restart_font.render("Press R to go again!",True,(20,253,199))
+        screen.blit(text1,(200,90))
+        screen.blit(text2,(160,190))
+        screen.blit(text22,(590,190))
+        screen.blit(text3,(230,450))
+        player(playerImg,playerX,playerY)
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_r:
+                    pause=False
+                    restartGame()
+        pygame.display.update()
 
 # Restart function
 def restartGame():
     mixer.music.load('background-music.wav')
     mixer.music.play(-1)
 
-    global playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
+    global highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
 
     playerImg=pygame.image.load('spaceship.png')
     playerX=370
@@ -158,9 +210,33 @@ def restartGame():
     enemyBulletX_mov=18
 
     score_val=0
+    highscore_before_start=high_score_val
     isGameOver=False
 
+# Pause function
+def pauseGame():
+    dx=800
+    pause=True
+    while pause:
+        screen.blit(background,(0,0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_p:
+                    pause=False
 
+        if dx>-500:
+            dx-=2
+        else:
+            dx=800
+        pause_font=pygame.font.Font('IndieFlower-Regular.ttf',40)
+        pauseText=pause_font.render("Press P to resume the game",True,(20,253,199))
+        screen.blit(pauseText,(0+dx,200))
+        showScore()
+        clock.tick(FPS)
+        pygame.display.update()
 
 clock = pygame.time.Clock()
 
@@ -198,8 +274,8 @@ while running:
                 bulletY=480-18
                 mixer.Sound('laser.wav').play()
             
-            if event.key==pygame.K_r and isGameOver:
-                restartGame()
+            if event.key==pygame.K_p and isGameOver==False:
+                pauseGame()                              
 
 
     if isGameOver==False and player_mov!=0:
