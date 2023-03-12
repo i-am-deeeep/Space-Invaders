@@ -47,6 +47,7 @@ pygame.display.set_icon(icon)
 # Background music
 mixer.music.load('background-music.wav')
 mixer.music.play(-1)
+game_start=0
 
 
 # Player
@@ -103,6 +104,37 @@ def isCollision(X1,Y1,X2,Y2,type):
         else:
             return False
 
+# Game start function
+def startingPage():
+    pause=True
+    while pause:
+        screen.blit(background,(0,0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_SPACE:
+                    pause=False
+
+        logo=pygame.image.load('logopp3.png')
+        screen.blit(logo,(200,50))
+        pause_font=pygame.font.Font('IndieFlower-Regular.ttf',40)
+        font2=pygame.font.Font('IndieFlower-Regular.ttf',30)
+        text0=font2.render("How to play?",True,(255,0,255))
+        texthsc=font2.render("Highscore : "+str(high_score_val),True,(255,43,104))
+        text1=font2.render("-> Use left and right arrow keys to move",True,(255,255,0))
+        text2=font2.render("-> Use space to shoot the aliens to score",True,(255,255,0))
+        text4=pause_font.render("Hit space to start the game",True,(20,253,199))
+        screen.blit(text0,(150,220))
+        screen.blit(texthsc,(580,220))
+        screen.blit(text1,(114,260))
+        screen.blit(text2,(114,300))
+        screen.blit(text4,(180,500))
+        clock.tick(FPS)
+        pygame.display.update()
+
+
 # Score
 score_val=0
 hisc1=open("exee.txt","r")
@@ -131,11 +163,11 @@ def gameOver():
     d=[[20,False],[253,False],[199,False]]
     frame=0
     mus=0
+    ds=0
+    dx=0
     pause=True
     while pause:
         frame+=1
-        if frame>100000000:
-            frame=0
         screen.blit(background,(0,0))
         t=tuple(i[0] for i in d)
         if frame>120 and highscore_before_start<score_val:
@@ -145,7 +177,11 @@ def gameOver():
                 d[2][0]=0
                 mixer.Sound('highscore.wav').play()
             mus+=1
-            highscore_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
+            if ds<80:
+                ds+=1
+            if dx<160:
+                dx+=2
+            highscore_font=pygame.font.Font('IndieFlower-Regular.ttf',ds)
             for ind,[i,r] in enumerate(d):
                 if r==False:
                     if i<255:
@@ -164,8 +200,9 @@ def gameOver():
                     if d[ind][0]<0:
                         d[ind][0]=0
             text222=highscore_font.render("NEW HIGHSCORE!!",True,t)
-            screen.blit(text222,(130,270))
+            screen.blit(text222,(290-dx,270))
             
+        player(playerImg,playerX,playerY)
         text1=over_font.render("GAME OVER",True,(255,0,0))
         text2=over_font.render("Your score:",True,(20,253,199))
         text22=over_font.render(str(score_val),True,t)
@@ -174,7 +211,6 @@ def gameOver():
         screen.blit(text2,(160,190))
         screen.blit(text22,(590,190))
         screen.blit(text3,(230,450))
-        player(playerImg,playerX,playerY)
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -244,13 +280,18 @@ FPS = 60
 ######################################## Game loop ####################################################
 running=True
 while running:
-    # RGB
-    screen.fill((0,0,0))
 
     screen.blit(background,(0,0))
 
     # Limit framerate
     clock.tick(FPS)
+
+
+    # Starting page
+    if game_start==0:
+        game_start=1
+        startingPage()
+
 
 
     for event in pygame.event.get():
@@ -277,13 +318,6 @@ while running:
             if event.key==pygame.K_p and isGameOver==False:
                 pauseGame()                              
 
-
-    if isGameOver==False and player_mov!=0:
-        playerX+=player_mov*8
-        if playerX<0:
-            playerX=0
-        if playerX>736:
-            playerX=736
     
 
 
@@ -344,6 +378,13 @@ while running:
             _=enemy_list.pop(i)
             continue
 
+    # player movement
+    if isGameOver==False and player_mov!=0:
+        playerX+=player_mov*8
+        if playerX<0:
+            playerX=0
+        if playerX>736:
+            playerX=736
 
     # Enemy spawn
     level+=0.0001
