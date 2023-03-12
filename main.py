@@ -370,8 +370,8 @@ while running:
             
             if event.key==pygame.K_p and isGameOver==False:
                 pauseGame()                              
-    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and overheat==False and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>7) or (len(last2secs_list))==0):
-        bullet_list.append(Bullet(bulletImg,playerX+24,480,0,30))
+    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and overheat==False and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>12) or (len(last2secs_list))==0):
+        bullet_list.append(Bullet(bulletImg,playerX+24,480,0,15))
         last5secs_list.append(gameframe)
         last2secs_list.append(gameframe)
         mixer.Sound('laser.wav').play()
@@ -403,7 +403,7 @@ while running:
         
         # alien5 feature
         if enemy_obj.img==alien5:
-            if enemy_obj.enemyY>400:
+            if enemy_obj.enemyY>390:
                 enemy_obj.enemyY_mov=0.4
         
         # alien6 feature
@@ -438,7 +438,6 @@ while running:
         enemy(enemy_obj.img,enemy_obj.enemyX,enemy_obj.enemyY)
         
         if enemy_obj.enemyY>600:
-            score_val-=1
             del enemy_obj
             _=enemy_list.pop(i)
             continue
@@ -447,7 +446,7 @@ while running:
         for ib,bullet_obj in enumerate(bullet_list):
             # Collision of enemy with bullet
             if enemy_obj.img!=enemyBulletImg and isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bullet_obj.bulletX+8,bullet_obj.bulletY+8,"enemy"): 
-                score_val+=10
+                score_val+=1
                 del bullet_obj
                 __=bullet_list.pop(ib)
                 del enemy_obj
