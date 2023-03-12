@@ -3,7 +3,13 @@ import random
 import math
 from pygame import mixer
 
-
+class Bullet:
+    def __init__(self,img,bulletX,bulletY,bulletX_mov,bulletY_mov):
+        self.img=img
+        self.bulletX=bulletX
+        self.bulletY=bulletY
+        self.bulletX_mov=bulletX_mov
+        self.bulletY_mov=bulletY_mov
 class Enemy:
     def __init__(self,img,enemyX,enemyY,enemyX_mov,enemyY_mov):
         self.img=img
@@ -46,7 +52,6 @@ pygame.display.set_icon(icon)
 
 # Background music
 mixer.music.load('background-music.wav')
-mixer.music.play(-1)
 game_start=0
 
 
@@ -73,13 +78,15 @@ def enemy(img,x,y):
     screen.blit(img,(x,y))
 
 # Bullet
+bullet_list=[]
+overheat=False
+overheat_finish_frame=0
+gameframe=0
+last5secs_list=[0]
+last2secs_list=[0]
 bulletImg=pygame.image.load('bullet.png')
-bulletX=0
-bulletY=2000
-bulletY_mov=30
-fired=0
-def bullet(x,y):
-    screen.blit(bulletImg,(x,y))
+def bullet(img,x,y):
+    screen.blit(img,(x,y))
 
 # Enemy bullet
 enemyBulletImg=pygame.image.load('enemy_bullet.png')
@@ -106,6 +113,8 @@ def isCollision(X1,Y1,X2,Y2,type):
 
 # Game start function
 def startingPage():
+    dy=-30
+    reversey=False
     pause=True
     while pause:
         screen.blit(background,(0,0))
@@ -130,7 +139,17 @@ def startingPage():
         screen.blit(texthsc,(580,220))
         screen.blit(text1,(114,260))
         screen.blit(text2,(114,300))
-        screen.blit(text4,(180,500))
+        if reversey==False:
+            if dy<30:
+                dy+=0.4
+            else:
+                reversey=True
+        else:
+            if dy>-30:
+                dy-=0.4
+            else:
+                reversey=False
+        screen.blit(text4,(180,500+dy))
         clock.tick(FPS)
         pygame.display.update()
 
@@ -154,6 +173,38 @@ def showScore():
     high_score=score_font.render("High Score : "+str(high_score_val),True,(255,255,255))
     screen.blit(score,(10,10))
     screen.blit(high_score,(10,50))
+
+# Overheat function
+overheat_dy=8
+overheat_y1=700
+overheat_y2=750
+overheat_rev=False
+def showOverheat():
+    global overheat_dy,overheat_y1,overheat_y2,overheat_rev
+    if overheat_rev==False:
+        if overheat_dy>0:
+            overheat_dy-=0.07
+        else:
+            overheat_rev=True
+    else:
+        if overheat_dy<8:
+            overheat_dy+=0.07 
+    
+    overheat_y1-=overheat_dy
+    overheat_y2-=overheat_dy
+    overheat_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    overheat_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=overheat_font1.render("OVERHEAT!!",True,(255,0,0))
+    text2=overheat_font2.render("slow down firing rate",True,(255,0,0))
+    screen.blit(text1,(300,overheat_y1))
+    screen.blit(text2,(300,overheat_y2))
+def resetOverheatVariables():
+    global overheat_dy,overheat_y1,overheat_y2,overheat_rev
+    overheat_dy=8
+    overheat_y1=700
+    overheat_y2=750
+    overheat_rev=False
+
 
 # Game Over function
 isGameOver=False
@@ -227,7 +278,7 @@ def restartGame():
     mixer.music.load('background-music.wav')
     mixer.music.play(-1)
 
-    global highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
+    global last2secs_list,last5secs_list,overheat,highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
 
     playerImg=pygame.image.load('spaceship.png')
     playerX=370
@@ -248,6 +299,10 @@ def restartGame():
     score_val=0
     highscore_before_start=high_score_val
     isGameOver=False
+    overheat=False
+    last5secs_list=[]
+    last2secs_list=[]
+    resetOverheatVariables()
 
 # Pause function
 def pauseGame():
@@ -291,8 +346,10 @@ while running:
     if game_start==0:
         game_start=1
         startingPage()
+        mixer.Sound('startgame.wav').play()
+        mixer.music.play(-1)
 
-
+    gameframe+=1
 
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -310,15 +367,29 @@ while running:
                 player_mov=0
 
         if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_SPACE and fired==0 and isGameOver==False:
-                fired=1
-                bulletY=480-18
-                mixer.Sound('laser.wav').play()
             
             if event.key==pygame.K_p and isGameOver==False:
                 pauseGame()                              
+    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and overheat==False and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>7) or (len(last2secs_list))==0):
+        bullet_list.append(Bullet(bulletImg,playerX+24,480,0,30))
+        last5secs_list.append(gameframe)
+        last2secs_list.append(gameframe)
+        mixer.Sound('laser.wav').play()
 
-    
+    # Overheat logic
+    for ind,item in enumerate(last5secs_list):
+        if gameframe-item>60*5:
+            _=last5secs_list.pop(ind)
+    for ind,item in enumerate(last2secs_list):
+        if gameframe-item>60*2:
+            _=last2secs_list.pop(ind)
+    if overheat==False and len(last5secs_list)>15 and len(last2secs_list)>7:
+        overheat=True
+        mixer.Sound('overheat.wav').play()
+        overheat_finish_frame=gameframe+60*5
+    if overheat==True and gameframe>=overheat_finish_frame:
+        overheat=False
+        resetOverheatVariables()
 
 
     for i,enemy_obj in enumerate(enemy_list):
@@ -352,10 +423,12 @@ while running:
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
+            for bullet_obj2 in bullet_list:
+                del bullet_obj2
+            bullet_list.clear()
             playerImg=pygame.image.load('spaceship_dead.png')
             break
-        
-        
+
         enemy_obj.enemyX+=enemy_obj.enemyX_mov
         enemy_obj.enemyY+=enemy_obj.enemyY_mov
         if enemy_obj.enemyX<0 or enemy_obj.enemyX>736:
@@ -364,19 +437,33 @@ while running:
         
         enemy(enemy_obj.img,enemy_obj.enemyX,enemy_obj.enemyY)
         
-        if enemy_obj.enemyY>800:
+        if enemy_obj.enemyY>600:
+            score_val-=1
             del enemy_obj
             _=enemy_list.pop(i)
             continue
 
-        # Collision of enemy with bullet
-        if enemy_obj.img!=enemyBulletImg and isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bulletX+8,bulletY+8,"enemy"):
-            fired=0
-            bulletY=2000
-            score_val+=1
-            del enemy_obj
-            _=enemy_list.pop(i)
-            continue
+         
+        for ib,bullet_obj in enumerate(bullet_list):
+            # Collision of enemy with bullet
+            if enemy_obj.img!=enemyBulletImg and isCollision(enemy_obj.enemyX+32,enemy_obj.enemyY+16,bullet_obj.bulletX+8,bullet_obj.bulletY+8,"enemy"): 
+                score_val+=10
+                del bullet_obj
+                __=bullet_list.pop(ib)
+                del enemy_obj
+                _=enemy_list.pop(i)
+                break
+
+            
+    for ib,bullet_obj in enumerate(bullet_list):
+        bullet_obj.bulletX-=bullet_obj.bulletX_mov
+        bullet_obj.bulletY-=bullet_obj.bulletY_mov
+        bullet(bullet_obj.img,bullet_obj.bulletX,bullet_obj.bulletY)
+        if bullet_obj.bulletX<-16 or bullet_obj.bulletX>800 or bullet_obj.bulletY<-16:
+            del bullet_obj
+            __=bullet_list.pop(ib)
+        
+
 
     # player movement
     if isGameOver==False and player_mov!=0:
@@ -418,19 +505,15 @@ while running:
 
 
     player(playerImg,playerX,playerY)
-    if fired==1:
-        bullet(bulletX,bulletY)
-        bulletY-=bulletY_mov
-        if bulletY<-32:
-            fired=0
-            bulletY=2000
-    if fired==0:
-        bulletX=playerX+24
+     
 
     if isGameOver:
         gameOver()
     else:
         showScore()
+    
+    if overheat:
+        showOverheat()
     
     pygame.display.update()
 
