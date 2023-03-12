@@ -65,6 +65,8 @@ def player(im,x,y):
 level=starting_level=9
 ticks=0
 noEnemy=True
+noOverheatSpell=False
+noOverheatSpell_finish_frame=0
 
 # Enemy
 enemy_list=[]
@@ -95,6 +97,21 @@ enemyBulletY=2000
 enemyBulletY_mov=18
 enemyBulletX_mov=18
 
+# Box
+boxImg=pygame.image.load('giftbox.png')
+boxX=0
+boxY=-100
+boxY_mov=6
+def box(x,y):
+    screen.blit(boxImg,(x,y))
+
+# Coin
+coinImg=pygame.image.load('coin.png')
+coinX=0
+coinY=-100
+coinY_mov=4
+def coin(x,y):
+    screen.blit(coinImg,(x,y))
 
 # Function to handle all collisions
 def isCollision(X1,Y1,X2,Y2,type):
@@ -205,7 +222,36 @@ def resetOverheatVariables():
     overheat_y2=750
     overheat_rev=False
 
-
+# noOverheatSpell function
+noOverheatSpell_dy=8
+noOverheatSpell_y1=700
+noOverheatSpell_y2=750
+noOverheatSpell_rev=False
+def showNoOverheatSpell():
+    global noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
+    if noOverheatSpell_rev==False:
+        if noOverheatSpell_dy>0:
+            noOverheatSpell_dy-=0.07
+        else:
+            noOverheatSpell_rev=True
+    else:
+        if noOverheatSpell_dy<8:
+            noOverheatSpell_dy+=0.07 
+    
+    noOverheatSpell_y1-=noOverheatSpell_dy
+    noOverheatSpell_y2-=noOverheatSpell_dy
+    noOverheatSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    noOverheatSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=noOverheatSpell_font1.render("No overheat",True,(255,255,255))
+    text2=noOverheatSpell_font2.render("for next 15 seconds",True,(255,255,255))
+    screen.blit(text1,(300,noOverheatSpell_y1))
+    screen.blit(text2,(300,noOverheatSpell_y2))
+def resetNoOverheatSpellVariables():
+    global noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
+    noOverheatSpell_dy=8
+    noOverheatSpell_y1=700
+    noOverheatSpell_y2=750
+    noOverheatSpell_rev=False
 # Game Over function
 isGameOver=False
 over_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
@@ -278,7 +324,7 @@ def restartGame():
     mixer.music.load('background-music.wav')
     mixer.music.play(-1)
 
-    global last2secs_list,last5secs_list,overheat,highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
+    global boxY,coinY,last2secs_list,last5secs_list,overheat,highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
 
     playerImg=pygame.image.load('spaceship.png')
     playerX=370
@@ -303,6 +349,9 @@ def restartGame():
     last5secs_list=[]
     last2secs_list=[]
     resetOverheatVariables()
+    boxY=-100
+    coinY=-100
+    resetNoOverheatSpellVariables()
 
 # Pause function
 def pauseGame():
@@ -370,7 +419,7 @@ while running:
             
             if event.key==pygame.K_p and isGameOver==False:
                 pauseGame()                              
-    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and overheat==False and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>12) or (len(last2secs_list))==0):
+    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and (overheat==False or noOverheatSpell==True) and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>12) or (len(last2secs_list))==0):
         bullet_list.append(Bullet(bulletImg,playerX+24,480,0,15))
         last5secs_list.append(gameframe)
         last2secs_list.append(gameframe)
@@ -383,7 +432,7 @@ while running:
     for ind,item in enumerate(last2secs_list):
         if gameframe-item>60*2:
             _=last2secs_list.pop(ind)
-    if overheat==False and len(last5secs_list)>15 and len(last2secs_list)>7:
+    if overheat==False and noOverheatSpell==False and len(last5secs_list)>15 and len(last2secs_list)>7:
         overheat=True
         mixer.Sound('overheat.wav').play()
         overheat_finish_frame=gameframe+60*5
@@ -471,6 +520,16 @@ while running:
             playerX=0
         if playerX>736:
             playerX=736
+    player(playerImg,playerX,playerY)
+
+    # Box and coin spawn
+    if boxY+coinY==-200 and random.randint(1,1000)<=1:
+        if random.randint(1,10)<=2:
+            boxX=random.randint(0,768)
+            boxY=-32
+        else:
+            coinX=random.randint(0,768)
+            coinY=-32
 
     # Enemy spawn
     level+=0.0001
@@ -500,10 +559,37 @@ while running:
             enemy_obj=Enemy(img,random.randint(0,736),-64,0,1)
             enemy_list.append(enemy_obj)
 
+    # Box update
+    if boxY!=-100:
+        boxY+=boxY_mov
+        if boxY>600:
+            boxY=-100
+    box(boxX,boxY)
+    
+    # Coin update
+    if coinY!=-100:
+        coinY+=coinY_mov
+        if coinY>600:
+            coinY=-100
+    coin(coinX,coinY)
 
+    # Coin collision
+    if isCollision(playerX,playerY,coinX,coinY,"player"):
+        score_val+=1
+        coinY=-100
+        mixer.Sound('coin_collect.wav').play()
 
-
-    player(playerImg,playerX,playerY)
+    # Box collision
+    if isCollision(playerX,playerY,boxX,boxY,"player"):
+        boxY=-100
+        mixer.Sound('box_collect.mp3').play()
+        ra=random.randint(1,1)
+        if ra==1 and noOverheatSpell==False:
+            noOverheatSpell=True
+            noOverheatSpell_finish_frame=gameframe+60*15
+    if gameframe>=noOverheatSpell_finish_frame:
+        noOverheatSpell=False
+        resetNoOverheatSpellVariables()
      
 
     if isGameOver:
@@ -513,6 +599,9 @@ while running:
     
     if overheat:
         showOverheat()
+    
+    if noOverheatSpell:
+        showNoOverheatSpell()
     
     pygame.display.update()
 
