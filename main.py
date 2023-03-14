@@ -42,11 +42,11 @@ pygame.init()
 screen=pygame.display.set_mode((800,600))
 
 # Background
-background=pygame.image.load('background.png')
+background=pygame.image.load('background.png').convert()
 
 # Title and icon
 pygame.display.set_caption("Space Invaders")
-icon=pygame.image.load('icon.png')
+icon=pygame.image.load('icon.png').convert_alpha()
 pygame.display.set_icon(icon)
 
 
@@ -56,7 +56,7 @@ game_start=0
 
 
 # Player
-playerImg=pygame.image.load('spaceship.png')
+playerImg=pygame.image.load('spaceship.png').convert_alpha()
 playerX=370
 playerY=480
 player_mov=0
@@ -67,15 +67,24 @@ ticks=0
 noEnemy=True
 noOverheatSpell=False
 noOverheatSpell_finish_frame=0
+highFRSpell=False
+highFRSpell_finish_frame=0
+firing_rate=12
+invincibleSpell=False
+invincibleSpell_finish_frame=0
+multibulletSpell=False
+multibulletSpell_finish_frame=0
+coinSpell=False
+coinSpell_finish_frame=0
 
 # Enemy
 enemy_list=[]
-alien1=pygame.image.load('alien1.png')
-alien2=pygame.image.load('alien2.png')
-alien3=pygame.image.load('alien3.png')
-alien4=pygame.image.load('alien4.png')
-alien5=pygame.image.load('alien5.png')
-alien6=pygame.image.load('alien6.png')
+alien1=pygame.image.load('alien1.png').convert_alpha()
+alien2=pygame.image.load('alien2.png').convert_alpha()
+alien3=pygame.image.load('alien3.png').convert_alpha()
+alien4=pygame.image.load('alien4.png').convert_alpha()
+alien5=pygame.image.load('alien5.png').convert_alpha()
+alien6=pygame.image.load('alien6.png').convert_alpha()
 def enemy(img,x,y):
     screen.blit(img,(x,y))
 
@@ -86,27 +95,33 @@ overheat_finish_frame=0
 gameframe=0
 last5secs_list=[0]
 last2secs_list=[0]
-bulletImg=pygame.image.load('bullet.png')
+bulletImg=pygame.image.load('bullet.png').convert_alpha()
+bulletminus1Img=pygame.image.load('bullet(-1).png').convert_alpha()
+bulletminus2Img=pygame.image.load('bullet(-2).png').convert_alpha()
+#bulletminus3Img=pygame.image.load('bullet(-3).png').convert_alpha()
+bullet1Img=pygame.image.load('bullet(1).png').convert_alpha()
+bullet2Img=pygame.image.load('bullet(2).png').convert_alpha()
+#bullet3Img=pygame.image.load('bullet(3).png').convert_alpha()
 def bullet(img,x,y):
     screen.blit(img,(x,y))
 
 # Enemy bullet
-enemyBulletImg=pygame.image.load('enemy_bullet.png')
+enemyBulletImg=pygame.image.load('enemy_bullet.png').convert_alpha()
 enemyBulletX=0
 enemyBulletY=2000
 enemyBulletY_mov=18
 enemyBulletX_mov=18
 
 # Box
-boxImg=pygame.image.load('giftbox.png')
+boxImg=pygame.image.load('giftbox.png').convert_alpha()
 boxX=0
 boxY=-100
-boxY_mov=6
+boxY_mov=5
 def box(x,y):
     screen.blit(boxImg,(x,y))
 
 # Coin
-coinImg=pygame.image.load('coin.png')
+coinImg=pygame.image.load('coin.png').convert_alpha()
 coinX=0
 coinY=-100
 coinY_mov=4
@@ -143,19 +158,21 @@ def startingPage():
                 if event.key==pygame.K_SPACE:
                     pause=False
 
-        logo=pygame.image.load('logopp3.png')
+        logo=pygame.image.load('logopp3.png').convert_alpha()
         screen.blit(logo,(200,50))
         pause_font=pygame.font.Font('IndieFlower-Regular.ttf',40)
-        font2=pygame.font.Font('IndieFlower-Regular.ttf',30)
+        font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
         text0=font2.render("How to play?",True,(255,0,255))
-        texthsc=font2.render("Highscore : "+str(high_score_val),True,(255,43,104))
+        texthsc=pause_font.render("Highscore : "+str(high_score_val),True,(255,43,104))
         text1=font2.render("-> Use left and right arrow keys to move",True,(255,255,0))
-        text2=font2.render("-> Use space to shoot the aliens to score",True,(255,255,0))
+        text2=font2.render("-> Use space to shoot the aliens",True,(255,255,0))
+        text3=font2.render("-> Collect the coins and mystery boxes",True,(255,255,0))
         text4=pause_font.render("Hit space to start the game",True,(20,253,199))
-        screen.blit(text0,(150,220))
-        screen.blit(texthsc,(580,220))
-        screen.blit(text1,(114,260))
-        screen.blit(text2,(114,300))
+        screen.blit(text0,(205,420))
+        screen.blit(texthsc,(300,220))
+        screen.blit(text1,(185,465))
+        screen.blit(text2,(185,500))
+        screen.blit(text3,(185,530))
         if reversey==False:
             if dy<30:
                 dy+=0.4
@@ -166,7 +183,7 @@ def startingPage():
                 dy-=0.4
             else:
                 reversey=False
-        screen.blit(text4,(180,500+dy))
+        screen.blit(text4,(180,300+dy))
         clock.tick(FPS)
         pygame.display.update()
 
@@ -194,7 +211,7 @@ def showScore():
 # Overheat function
 overheat_dy=8
 overheat_y1=700
-overheat_y2=750
+overheat_y2=770
 overheat_rev=False
 def showOverheat():
     global overheat_dy,overheat_y1,overheat_y2,overheat_rev
@@ -212,7 +229,7 @@ def showOverheat():
     overheat_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
     overheat_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
     text1=overheat_font1.render("OVERHEAT!!",True,(255,0,0))
-    text2=overheat_font2.render("slow down firing rate",True,(255,0,0))
+    text2=overheat_font2.render(" slow down firing rate",True,(255,0,0))
     screen.blit(text1,(300,overheat_y1))
     screen.blit(text2,(300,overheat_y2))
 def resetOverheatVariables():
@@ -225,10 +242,12 @@ def resetOverheatVariables():
 # noOverheatSpell function
 noOverheatSpell_dy=8
 noOverheatSpell_y1=700
-noOverheatSpell_y2=750
+noOverheatSpell_y2=770
 noOverheatSpell_rev=False
+noOverheatSpell_length=360
+dec=0.4
 def showNoOverheatSpell():
-    global noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
+    global noOverheatSpell_length,dec,noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
     if noOverheatSpell_rev==False:
         if noOverheatSpell_dy>0:
             noOverheatSpell_dy-=0.07
@@ -242,16 +261,158 @@ def showNoOverheatSpell():
     noOverheatSpell_y2-=noOverheatSpell_dy
     noOverheatSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
     noOverheatSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
-    text1=noOverheatSpell_font1.render("No overheat",True,(255,255,255))
-    text2=noOverheatSpell_font2.render("for next 15 seconds",True,(255,255,255))
+    text1=noOverheatSpell_font1.render("No overheat",True,(255,255,204))
+    text2=noOverheatSpell_font2.render("    for 15 seconds",True,(255,255,204))
     screen.blit(text1,(300,noOverheatSpell_y1))
     screen.blit(text2,(300,noOverheatSpell_y2))
+    noOverheatSpell_length-=dec
+    represent(noOverheatSpell_length,4,(255,204,204))
 def resetNoOverheatSpellVariables():
-    global noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
+    global noOverheatSpell_length,noOverheatSpell_dy,noOverheatSpell_y1,noOverheatSpell_y2,noOverheatSpell_rev
     noOverheatSpell_dy=8
     noOverheatSpell_y1=700
     noOverheatSpell_y2=750
     noOverheatSpell_rev=False
+    noOverheatSpell_length=360
+# HighFRSpell function
+highFRSpell_dy=8
+highFRSpell_y1=700
+highFRSpell_y2=770
+highFRSpell_rev=False
+highFRSpell_length=360
+def showHighFRSpell():
+    global highFRSpell_length,dec,highFRSpell_dy,highFRSpell_y1,highFRSpell_y2,highFRSpell_rev
+    if highFRSpell_rev==False:
+        if highFRSpell_dy>0:
+            highFRSpell_dy-=0.07
+        else:
+            highFRSpell_rev=True
+    else:
+        if highFRSpell_dy<8:
+            highFRSpell_dy+=0.07 
+    
+    highFRSpell_y1-=highFRSpell_dy
+    highFRSpell_y2-=highFRSpell_dy
+    highFRSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    highFRSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=highFRSpell_font1.render("High firing rate",True,(255,153,51))
+    text2=highFRSpell_font2.render("      for 15 seconds",True,(255,153,51))
+    screen.blit(text1,(300,highFRSpell_y1))
+    screen.blit(text2,(300,highFRSpell_y2))
+    highFRSpell_length-=dec
+    represent(highFRSpell_length,10,(255,153,51))
+def resetHighFRSpellVariables():
+    global highFRSpell_length,highFRSpell_dy,highFRSpell_y1,highFRSpell_y2,highFRSpell_rev
+    highFRSpell_dy=8
+    highFRSpell_y1=700
+    highFRSpell_y2=770
+    highFRSpell_rev=False
+    highFRSpell_length=360
+# InvincibleSpell function
+invincibleSpell_dy=8
+invincibleSpell_y1=700
+invincibleSpell_y2=770
+invincibleSpell_rev=False
+invincibleSpell_length=360
+def showInvincibleSpell():
+    global invincibleSpell_length,dec,invincibleSpell_dy,invincibleSpell_y1,invincibleSpell_y2,invincibleSpell_rev
+    if invincibleSpell_rev==False:
+        if invincibleSpell_dy>0:
+            invincibleSpell_dy-=0.07
+        else:
+            invincibleSpell_rev=True
+    else:
+        if invincibleSpell_dy<8:
+            invincibleSpell_dy+=0.07 
+    
+    invincibleSpell_y1-=invincibleSpell_dy
+    invincibleSpell_y2-=invincibleSpell_dy
+    invincibleSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    invincibleSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=invincibleSpell_font1.render("Invincible",True,(255,255,0))
+    text2=invincibleSpell_font2.render("for 15 seconds",True,(255,255,0))
+    screen.blit(text1,(300,invincibleSpell_y1))
+    screen.blit(text2,(305,invincibleSpell_y2))
+    invincibleSpell_length-=dec
+    represent(invincibleSpell_length,16,(255,255,0))
+def resetInvincibleSpellVariables():
+    global invincibleSpell_length,invincibleSpell_dy,invincibleSpell_y1,invincibleSpell_y2,invincibleSpell_rev
+    invincibleSpell_dy=8
+    invincibleSpell_y1=700
+    invincibleSpell_y2=750
+    invincibleSpell_rev=False
+    invincibleSpell_length=360
+# multibulletSpell function
+multibulletSpell_dy=8
+multibulletSpell_y1=700
+multibulletSpell_y2=770
+multibulletSpell_rev=False
+multibulletSpell_length=360
+def showMultibulletSpell():
+    global multibulletSpell_length,dec,multibulletSpell_dy,multibulletSpell_y1,multibulletSpell_y2,multibulletSpell_rev
+    if multibulletSpell_rev==False:
+        if multibulletSpell_dy>0:
+            multibulletSpell_dy-=0.07
+        else:
+            multibulletSpell_rev=True
+    else:
+        if multibulletSpell_dy<8:
+            multibulletSpell_dy+=0.07 
+    
+    multibulletSpell_y1-=multibulletSpell_dy
+    multibulletSpell_y2-=multibulletSpell_dy
+    multibulletSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    multibulletSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=multibulletSpell_font1.render("Multiple bullets",True,(204,0,204))
+    text2=multibulletSpell_font2.render("      for 15 seconds",True,(204,0,204))
+    screen.blit(text1,(300,multibulletSpell_y1))
+    screen.blit(text2,(300,multibulletSpell_y2))
+    multibulletSpell_length-=dec
+    represent(multibulletSpell_length,22,(204,0,204))
+def resetMultibulletSpellVariables():
+    global multibulletSpell_length,multibulletSpell_dy,multibulletSpell_y1,multibulletSpell_y2,multibulletSpell_rev
+    multibulletSpell_dy=8
+    multibulletSpell_y1=700
+    multibulletSpell_y2=770
+    multibulletSpell_rev=False
+    multibulletSpell_length=360
+# CoinSpell function
+coinSpell_dy=8
+coinSpell_y1=700
+coinSpell_y2=770
+coinSpell_rev=False
+def showCoinSpell():
+    global coinSpell_dy,coinSpell_y1,coinSpell_y2,coinSpell_rev
+    if coinSpell_rev==False:
+        if coinSpell_dy>0:
+            coinSpell_dy-=0.07
+        else:
+            coinSpell_rev=True
+    else:
+        if coinSpell_dy<8:
+            coinSpell_dy+=0.07 
+
+    coinSpell_y1-=coinSpell_dy
+    coinSpell_y2-=coinSpell_dy
+    coinSpell_font1=pygame.font.Font('IndieFlower-Regular.ttf',50)
+    coinSpell_font2=pygame.font.Font('IndieFlower-Regular.ttf',25)
+    text1=coinSpell_font1.render("+20 coins",True,(255,255,255))
+    text2=coinSpell_font2.render("",True,(255,255,255))
+    screen.blit(text1,(300,coinSpell_y1))
+    screen.blit(text2,(300,coinSpell_y2))
+def resetCoinSpellVariables():
+    global coinSpell_dy,coinSpell_y1,coinSpell_y2,coinSpell_rev
+    coinSpell_dy=8
+    coinSpell_y1=700
+    coinSpell_y2=750
+    coinSpell_rev=False
+
+
+def represent(l,x,color):
+    pygame.draw.rect(screen, color, pygame.Rect(x, 100+(360-l), 2, l))
+
+
+
 # Game Over function
 isGameOver=False
 over_font=pygame.font.Font('IndieFlower-Regular.ttf',80)
@@ -262,6 +423,8 @@ def gameOver():
     mus=0
     ds=0
     dx=0
+    m=mixer.Sound('game-over.wav')
+    m.play()
     pause=True
     while pause:
         frame+=1
@@ -316,6 +479,7 @@ def gameOver():
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_r:
                     pause=False
+                    m.stop()
                     restartGame()
         pygame.display.update()
 
@@ -324,7 +488,7 @@ def restartGame():
     mixer.music.load('background-music.wav')
     mixer.music.play(-1)
 
-    global boxY,coinY,last2secs_list,last5secs_list,overheat,highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
+    global noOverheatSpell,highFRSpell,invincibleSpell,multibulletSpell,coinSpell,boxY,coinY,last2secs_list,last5secs_list,overheat,highscore_before_start,playerImg,playerX,playerY,player_mov,level,bulletX,bulletY,bulletY_mov,fired,enemyBulletX,enemyBulletY,enemyBulletX_mov,enemyBulletY_mov,score_val,isGameOver,starting_level
 
     playerImg=pygame.image.load('spaceship.png')
     playerX=370
@@ -352,6 +516,15 @@ def restartGame():
     boxY=-100
     coinY=-100
     resetNoOverheatSpellVariables()
+    resetHighFRSpellVariables()
+    resetInvincibleSpellVariables()
+    resetMultibulletSpellVariables()
+    resetCoinSpellVariables()
+    noOverheatSpell=False
+    highFRSpell=False
+    invincibleSpell=False
+    multibulletSpell=False
+    coinSpell=False
 
 # Pause function
 def pauseGame():
@@ -418,9 +591,22 @@ while running:
         if event.type==pygame.KEYDOWN:
             
             if event.key==pygame.K_p and isGameOver==False:
-                pauseGame()                              
-    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and (overheat==False or noOverheatSpell==True) and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>12) or (len(last2secs_list))==0):
-        bullet_list.append(Bullet(bulletImg,playerX+24,480,0,15))
+                pauseGame()  
+    if highFRSpell:
+        firing_rate=6
+    else:
+        firing_rate=12                            
+    if pygame.key.get_pressed()[pygame.K_SPACE] and gameframe>25 and (overheat==False or noOverheatSpell==True) and isGameOver==False and ((len(last2secs_list)>0 and gameframe-last2secs_list[-1]>firing_rate) or (len(last2secs_list))==0):
+        if multibulletSpell==False:
+            bullet_list.append(Bullet(bulletImg,playerX+24,480,0,15))
+        else:
+            bullet_list.append(Bullet(bulletImg,playerX+24,480,0,15))
+            bullet_list.append(Bullet(bulletminus1Img,playerX+24,480,3.882,14.488))
+            bullet_list.append(Bullet(bulletminus2Img,playerX+24,480,7.5,13))
+            #bullet_list.append(Bullet(bulletminus3Img,playerX+24,480,14.488,3.882))
+            bullet_list.append(Bullet(bullet1Img,playerX+24,480,-3.882,14.488))
+            bullet_list.append(Bullet(bullet2Img,playerX+24,480,-7.5,13))
+            #bullet_list.append(Bullet(bullet3Img,playerX+24,480,-14.488,3.882))
         last5secs_list.append(gameframe)
         last2secs_list.append(gameframe)
         mixer.Sound('laser.wav').play()
@@ -435,7 +621,7 @@ while running:
     if overheat==False and noOverheatSpell==False and len(last5secs_list)>15 and len(last2secs_list)>7:
         overheat=True
         mixer.Sound('overheat.wav').play()
-        overheat_finish_frame=gameframe+60*5
+        overheat_finish_frame=gameframe+60*4
     if overheat==True and gameframe>=overheat_finish_frame:
         overheat=False
         resetOverheatVariables()
@@ -463,12 +649,12 @@ while running:
                 enemy_list.append(Enemy(enemyBulletImg,enemy_obj.enemyX+24,enemy_obj.enemyY+48,x,y)) 
 
         # Game over logic
-        if (enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player")) or (enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy")):
+        if (invincibleSpell==False and enemy_obj.img!=enemyBulletImg and isCollision(playerX+16,playerY+16,enemy_obj.enemyX+16,enemy_obj.enemyY+16,"player")) or (invincibleSpell==False and enemy_obj.img==enemyBulletImg and isCollision(playerX+32,playerY+32,enemy_obj.enemyX+8,enemy_obj.enemyY+8,"enemy")):
             isGameOver=True
             mixer.music.stop()
             mixer.Sound('crash.wav').play()
             pygame.time.wait(1500)
-            mixer.Sound('game-over.wav').play()
+            
             for enemy_obj2 in enemy_list:
                 del enemy_obj2
             enemy_list.clear()
@@ -502,7 +688,7 @@ while running:
                 _=enemy_list.pop(i)
                 break
 
-            
+    # Bullet update      
     for ib,bullet_obj in enumerate(bullet_list):
         bullet_obj.bulletX-=bullet_obj.bulletX_mov
         bullet_obj.bulletY-=bullet_obj.bulletY_mov
@@ -523,8 +709,8 @@ while running:
     player(playerImg,playerX,playerY)
 
     # Box and coin spawn
-    if boxY+coinY==-200 and random.randint(1,1000)<=1:
-        if random.randint(1,10)<=2:
+    if boxY+coinY==-200 and random.randint(1,1000)<=5:
+        if random.randint(1,100)<=25 and gameframe>60*15 and coinSpell==False:
             boxX=random.randint(0,768)
             boxY=-32
         else:
@@ -532,12 +718,15 @@ while running:
             coinY=-32
 
     # Enemy spawn
-    level+=0.0001
+    if gameframe>60*600:
+        level+=0.01
+    else:
+        level+=0.0001
     if len(enemy_list)==1:
         noEnemy=True
     if noEnemy:
         ticks+=1
-    if (isGameOver==False and ticks>=120) or (len(enemy_list)<8 and isGameOver==False and random.randint(1,1000)<=level):
+    if (isGameOver==False and ticks>=120) or (((gameframe<=60*120 and len(enemy_list)<5) or (gameframe>60*120 and gameframe<=60*300 and len(enemy_list)<8) or (gameframe>60*300 and len(enemy_list)<12)) and isGameOver==False and random.randint(1,1000)<=level):
         r=random.randint(1,6)
         img=9
         if r==1 and level>starting_level+0.6:
@@ -574,22 +763,49 @@ while running:
     coin(coinX,coinY)
 
     # Coin collision
-    if isCollision(playerX,playerY,coinX,coinY,"player"):
+    if isCollision(playerX+32,playerY+32,coinX+16,coinY+16,"player"):
         score_val+=1
         coinY=-100
         mixer.Sound('coin_collect.wav').play()
 
     # Box collision
-    if isCollision(playerX,playerY,boxX,boxY,"player"):
+    if isCollision(playerX+32,playerY+32,boxX+16,boxY+16,"player"):
         boxY=-100
         mixer.Sound('box_collect.mp3').play()
-        ra=random.randint(1,1)
-        if ra==1 and noOverheatSpell==False:
+        ra=random.randint(1,4)
+
+        if noOverheatSpell==False and (highFRSpell or ra==1):
             noOverheatSpell=True
             noOverheatSpell_finish_frame=gameframe+60*15
-    if gameframe>=noOverheatSpell_finish_frame:
+        elif highFRSpell==False and (noOverheatSpell or ra==2):
+            highFRSpell=True
+            highFRSpell_finish_frame=gameframe+60*15
+        elif ra==3 and gameframe>60*120 and invincibleSpell==False:
+            invincibleSpell=True
+            invincibleSpell_finish_frame=gameframe+60*15
+        elif ra==4 and multibulletSpell==False:
+            multibulletSpell=True
+            multibulletSpell_finish_frame=gameframe+60*15
+        else:
+            score_val+=20
+            coinSpell=True
+            coinSpell_finish_frame=gameframe+60*5
+    if noOverheatSpell and gameframe>=noOverheatSpell_finish_frame:
         noOverheatSpell=False
+        last5secs_list.clear()
         resetNoOverheatSpellVariables()
+    if highFRSpell and gameframe>=highFRSpell_finish_frame:
+        highFRSpell=False
+        resetHighFRSpellVariables()
+    if invincibleSpell and gameframe>=invincibleSpell_finish_frame:
+        invincibleSpell=False
+        resetInvincibleSpellVariables()
+    if multibulletSpell and gameframe>=multibulletSpell_finish_frame:
+        multibulletSpell=False
+        resetMultibulletSpellVariables()
+    if coinSpell and gameframe>=coinSpell_finish_frame:
+        coinSpell=False
+        resetCoinSpellVariables()
      
 
     if isGameOver:
@@ -602,6 +818,15 @@ while running:
     
     if noOverheatSpell:
         showNoOverheatSpell()
+    if highFRSpell:
+        showHighFRSpell()
+    if invincibleSpell:
+        showInvincibleSpell()
+    if multibulletSpell:
+        showMultibulletSpell()
+    if coinSpell:
+        showCoinSpell()
     
-    pygame.display.update()
+    
+    pygame.display.flip()
 
