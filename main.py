@@ -172,7 +172,7 @@ def startingPage():
         screen.blit(texthsc,(300,220))
         screen.blit(text1,(185,465))
         screen.blit(text2,(185,500))
-        screen.blit(text3,(185,530))
+        screen.blit(text3,(185,535))
         if reversey==False:
             if dy<30:
                 dy+=0.4
@@ -482,6 +482,7 @@ def gameOver():
                     m.stop()
                     restartGame()
         pygame.display.update()
+    mixer.Sound('startgame.wav').play()
 
 # Restart function
 def restartGame():
@@ -643,7 +644,7 @@ while running:
         
         # alien6 feature
         if enemy_obj.img==alien6:
-            if enemy_obj.enemyY<250 and random.randint(1,1000)<=15:
+            if enemy_obj.enemyY<240 and random.randint(1,1000)<=15:
                 y=3
                 x=y*(enemy_obj.enemyX-playerX)/(enemy_obj.enemyY-playerY)
                 enemy_list.append(Enemy(enemyBulletImg,enemy_obj.enemyX+24,enemy_obj.enemyY+48,x,y)) 
@@ -661,7 +662,7 @@ while running:
             for bullet_obj2 in bullet_list:
                 del bullet_obj2
             bullet_list.clear()
-            playerImg=pygame.image.load('spaceship_dead.png')
+            playerImg=pygame.image.load('spaceship_dead.png').convert_alpha()
             break
 
         enemy_obj.enemyX+=enemy_obj.enemyX_mov
@@ -726,7 +727,7 @@ while running:
         noEnemy=True
     if noEnemy:
         ticks+=1
-    if (isGameOver==False and ticks>=120) or (((gameframe<=60*120 and len(enemy_list)<5) or (gameframe>60*120 and gameframe<=60*300 and len(enemy_list)<8) or (gameframe>60*300 and len(enemy_list)<12)) and isGameOver==False and random.randint(1,1000)<=level):
+    if (isGameOver==False and ticks>=120) or (((gameframe<=60*120 and len(enemy_list)<5) or (gameframe>60*120 and gameframe<=60*240 and len(enemy_list)<7) or (gameframe>60*240 and len(enemy_list)<9)) and isGameOver==False and random.randint(1,1000)<=level):
         r=random.randint(1,6)
         img=9
         if r==1 and level>starting_level+0.6:
